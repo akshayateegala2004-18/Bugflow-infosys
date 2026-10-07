@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BugFlow - Sprint Board</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #121214;
+            color: #e1e1e6;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            display: flex;
+        }
+        .sidebar {
+            width: 240px;
+            background-color: #1e1e24;
+            height: 100vh;
+            padding: 24px;
+            box-sizing: border-box;
+            border-right: 1px solid #2d2d35;
+            position: fixed;
+        }
+        .sidebar h2 {
+            color: #fba100;
+            margin-top: 0;
+            font-size: 22px;
+            margin-bottom: 30px;
+        }
+        .sidebar a {
+            display: block;
+            color: #a1a1aa;
+            text-decoration: none;
+            padding: 10px 12px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .sidebar a:hover, .sidebar a.active {
+            background-color: #2d2d35;
+            color: #fff;
+        }
+        .main-content {
+            margin-left: 240px;
+            padding: 40px;
+            width: calc(100% - 240px);
+            box-sizing: border-box;
+        }
+        .header-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 24px;
+        }
+        .board-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+        .card {
+            background-color: #1e1e24;
+            border: 1px solid #2d2d35;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .card h3 {
+            margin-top: 0;
+            color: #fba100;
+            font-size: 18px;
+            border-bottom: 1px solid #2d2d35;
+            padding-bottom: 10px;
+        }
+        .issue-item, .sprint-item {
+            background-color: #121214;
+            border: 1px solid #2d2d35;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+        }
+        form input, form textarea, form select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #121214;
+            border: 1px solid #2d2d35;
+            color: #fff;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #fba100;
+            color: #121214;
+            border: none;
+            padding: 8px 14px;
+            font-weight: 600;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        .btn-sm {
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2>BugFlow</h2>
+        <a href="{{ url_for('user.dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('user.create_issue') }}">New Issue</a>
+        <a href="{{ url_for('sprint.list_sprints') }}" class="active">Sprint Board</a>
+        <a href="{{ url_for('user.reports') }}">Reports</a>
+        <a href="{{ url_for('user.logout') }}" style="color: #ef4444; margin-top: 40px;">Logout</a>
+    </div>
+
+    <div class="main-content">
+        <div class="header-title">Agile Sprint Planning & Backlog</div>
+
+        <div class="board-grid">
+            <!-- Left Column: Active / Created Sprints -->
+            <div>
+                <div class="card" style="margin-bottom: 24px;">
+                    <h3>Create New Sprint</h3>
+                    <form method="POST" action="{{ url_for('sprint.create_sprint') }}">
+                        <input type="text" name="name" placeholder="Sprint Name (e.g., Sprint 1 - Foundation)" required>
+                        <textarea name="goal" placeholder="Sprint Goal..." rows="2"></textarea>
+                        
+                        <div class="mb-3">
+                            <label for="status" class="form-label" style="font-size: 13px; color: #a1a1aa; margin-bottom: 4px; display: block;">Sprint Status</label>
+                            <select id="status" name="status" required>
+                                <option value="" disabled selected>Select sprint status</option>
+                                <option value="PLANNING">Planning</option>
+                                <option value="ACTIVE">Active</option>
+                                <option value="COMPLETED">Completed</option>
+                            </select>
+                        </div>
+
+                        <button type="submit">Create Sprint</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h3>Active Sprints & Goals</h3>
+                    {% for sprint in sprints %}
+                    <div class="sprint-item">
+                        <strong>{{ sprint.name }}</strong> [{{ sprint.status }}]
+                        <p style="margin: 5px 0 10px 0; font-size: 13px; color: #a1a1aa;">Goal: {{ sprint.goal }}</p>
+                        
+                        <div style="font-size: 12px; color: #fba100; margin-bottom: 5px;">Assigned Issues:</div>
+                        <ul>
+                            {% for issue in sprint.issues %}
+                            <li>#{{ issue.id }} - {{ issue.title }} ({{ issue.priority }})</li>
+                            {% else %}
+                            <li style="color: #a1a1aa; list-style: none;">No bugs assigned to this sprint yet.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% else %}
+                    <p style="color: #a1a1aa; text-align: center;">No sprints created yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Right Column: Product Backlog -->
+            <div>
+                <div class="card">
+                    <h3>Product Backlog (Unassigned Bugs)</h3>
+                    {% for issue in backlog_issues %}
+                    <div class="issue-item">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong>#{{ issue.id }}: {{ issue.title }}</strong>
+                                <div style="font-size: 12px; color: #a1a1aa; margin-top: 4px;">Severity: {{ issue.severity }} | Priority: {{ issue.priority }}</div>
+                            </div>
+                            
+                            {% if sprints %}
+                            <form method="POST" action="{{ url_for('sprint.add_issue_to_sprint', sprint_id=sprints[0].id, issue_id=issue.id) }}" style="margin: 0;">
+                                <button type="submit" class="btn-sm">+ Add to Sprint</button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <p style="color: #a1a1aa; text-align: center;">No unassigned bugs in backlog.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

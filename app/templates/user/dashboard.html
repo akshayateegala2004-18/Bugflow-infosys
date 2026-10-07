@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - BugFlow{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold text-white mb-1">Welcome back, {{ current_user.username | title }}!</h2>
+        <p class="text-light opacity-75 mb-0">Here's an overview of project issues and team velocity.</p>
+    </div>
+    <span class="badge bg-primary p-2 fs-6">{{ current_user.role | title }}</span>
+</div>
+
+<!-- 4 Metric Summary Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card p-3 shadow-sm bg-dark text-white border-secondary">
+            <small class="text-light opacity-75">Total Issues</small>
+            <h3 class="fw-bold mt-1 text-info"><i class="fa-solid fa-bug me-2"></i>{{ issues|length }}</h3>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card p-3 shadow-sm bg-dark text-white border-secondary">
+            <small class="text-light opacity-75">Open Issues</small>
+            <!-- Fixed typo: "TRIGED" -> "TRIAGED" -->
+            <h3 class="fw-bold mt-1 text-warning"><i class="fa-solid fa-folder-open me-2"></i>{{ issues | selectattr("status", "in", ["OPEN", "REPORTED", "TRIAGED"]) | list | length }}</h3>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card p-3 shadow-sm bg-dark text-white border-secondary">
+            <small class="text-light opacity-75">In Progress</small>
+            <h3 class="fw-bold mt-1 text-primary"><i class="fa-solid fa-spinner me-2"></i>{{ issues | selectattr("status", "equalto", "IN_PROGRESS") | list | length }}</h3>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card p-3 shadow-sm bg-dark text-white border-secondary">
+            <small class="text-light opacity-75">Resolved</small>
+            <h3 class="fw-bold mt-1 text-success"><i class="fa-solid fa-circle-check me-2"></i>{{ issues | selectattr("status", "equalto", "RESOLVED") | list | length }}</h3>
+        </div>
+    </div>
+</div>
+
+<!-- Main Section Grid (Table + Quick Actions Sidebar) -->
+<div class="row">
+    <!-- Recent Issues Table (Left Column) -->
+    <div class="col-lg-8">
+        <div class="card p-4 shadow-sm bg-dark text-white border-secondary">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0 text-white">Recent Issues</h5>
+                <a href="#" class="text-decoration-none text-info small">View All</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-dark table-hover align-middle mb-0">
+                    <thead>
+                        <tr class="text-light opacity-75 small">
+                            <th>ISSUE</th>
+                            <th>TITLE</th>
+                            <th>PRIORITY</th>
+                            <th>STATUS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for issue in issues %}
+                        <tr>
+                            <td class="fw-semibold">
+                                <a href="{{ url_for('user.issue_detail', id=issue.id) }}" class="text-info text-decoration-none">#BUG-{{ issue.id }}</a>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('user.issue_detail', id=issue.id) }}" class="text-light text-decoration-none">{{ issue.title }}</a>
+                            </td>
+                            <td>
+                                {% if issue.priority == 'CRITICAL' or issue.priority == 'Urgent' %}
+                                <span class="badge bg-danger">Critical</span>
+                                {% elif issue.priority == 'MAJOR' %}
+                                <span class="badge bg-warning text-dark">Major</span>
+                                {% else %}
+                                <span class="badge bg-secondary">{{ issue.priority }}</span>
+                                {% endif %}
+                            </td>
+                            <td><span class="badge bg-dark border border-secondary text-light">{{ issue.status }}</span></td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="4" class="text-center text-muted py-4">No issues recorded yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions Panel (Right Column) -->
+    <div class="col-lg-4">
+        <div class="card p-4 shadow-sm bg-dark text-white border-secondary">
+            <h5 class="fw-bold mb-3 text-white">Quick Actions</h5>
+            <p class="text-light opacity-75 small mb-3">Manage your issues and triage effortlessly.</p>
+            
+            <div class="d-grid gap-2">
+                <a href="{{ url_for('user.create_issue') }}" class="btn btn-primary text-start p-3 shadow-sm">
+                    <i class="fa-solid fa-plus-circle me-2"></i> <strong>Report an Issue</strong>
+                    <div class="small text-white-50 mt-1">Submit a new software defect or feature request.</div>
+                </a>
+                
+                <a href="{{ url_for('user.analytics') }}" class="btn btn-dark text-start p-3 border border-secondary shadow-sm">
+                    <i class="fa-solid fa-chart-line me-2 text-info"></i> <strong class="text-white">View Analytics</strong>
+                    <div class="small text-light opacity-75 mt-1">Review resolution rates and project workload.</div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

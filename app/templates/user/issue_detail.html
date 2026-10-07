@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BugFlow - Issue #{{ issue.id }} Details</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { background-color: #121214; color: #e1e1e6; font-family: 'Inter', sans-serif; margin: 0; display: flex; }
+        .sidebar { width: 240px; background-color: #1e1e24; height: 100vh; padding: 24px; position: fixed; border-right: 1px solid #2d2d35; box-sizing: border-box; overflow-y: auto; }
+        .sidebar h2 { color: #fba100; margin-top: 0; font-size: 22px; margin-bottom: 20px; }
+        .sidebar-section { font-size: 11px; text-transform: uppercase; color: #71717a; margin: 15px 0 5px 12px; letter-spacing: 0.5px; }
+        .sidebar a { display: block; color: #a1a1aa; text-decoration: none; padding: 10px 12px; border-radius: 6px; margin-bottom: 4px; font-weight: 500; font-size: 14px; }
+        .sidebar a:hover, .sidebar a.active { background-color: #2d2d35; color: #fff; }
+        .main-content { margin-left: 240px; padding: 40px; width: calc(100% - 240px); box-sizing: border-box; }
+        .card { background-color: #1e1e24; border: 1px solid #2d2d35; padding: 20px; border-radius: 8px; margin-bottom: 24px; }
+        .card h3 { color: #fba100; margin-top: 0; font-size: 18px; border-bottom: 1px solid #2d2d35; padding-bottom: 10px; }
+        .comment-item, .log-item, .attachment-item { background-color: #121214; border: 1px solid #2d2d35; padding: 12px; border-radius: 6px; margin-bottom: 10px; font-size: 14px; }
+        form input, form textarea, form select { width: 100%; padding: 10px; margin-bottom: 10px; background-color: #121214; border: 1px solid #2d2d35; color: #fff; border-radius: 4px; box-sizing: border-box; }
+        button { background-color: #fba100; color: #121214; border: none; padding: 8px 14px; font-weight: 600; border-radius: 4px; cursor: pointer; }
+        button:hover { opacity: 0.9; }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Integration -->
+    <div class="sidebar">
+        <h2>BugFlow</h2>
+        
+        <div class="sidebar-section">Main</div>
+        {% if current_user.role == 'DEVELOPER' %}
+            <a href="{{ url_for('user.developer_dashboard') }}">Dashboard</a>
+        {% elif current_user.role == 'TESTER' %}
+            <a href="{{ url_for('user.tester_dashboard') }}">Dashboard</a>
+        {% else %}
+            <a href="{{ url_for('user.dashboard') }}">Dashboard</a>
+        {% endif %}
+        
+        <a href="{{ url_for('user.create_issue') }}">Report Issue</a>
+        <a href="{{ url_for('user.my_issues') }}">My Issues</a>
+        <a href="{{ url_for('user.resolution_assistance') }}">Resolution Assistance</a>
+
+        <div class="sidebar-section" style="margin-top: 20px;">Agile & Workspaces</div>
+        <a href="{{ url_for('user.sprints_workflow') }}">Sprints & Workflow</a>
+        <a href="{{ url_for('user.projects') }}">Projects</a>
+        <a href="{{ url_for('user.reports') }}">Reports</a>
+
+        <div class="sidebar-section" style="margin-top: 20px;">System</div>
+        <a href="{{ url_for('user.logout') }}" style="color: #ef4444;">Logout</a>
+    </div>
+
+    <div class="main-content">
+        <!-- Issue Header Information -->
+        <div class="card">
+            <h3>#BUG-{{ issue.id }}: {{ issue.title }}</h3>
+            <p><strong>Description:</strong> {{ issue.description }}</p>
+            <p style="font-size: 13px; color: #a1a1aa; margin-bottom: 15px;">
+                Severity: {{ issue.severity }} | Priority: {{ issue.priority }} | Status: <span style="color: #fba100; font-weight: 600;">{{ issue.status }}</span>
+            </p>
+
+            <!-- Status Update Form -->
+            <form method="POST" action="{{ url_for('user.update_issue_status', id=issue.id) }}" style="display: flex; gap: 10px; align-items: center; margin-top: 10px;">
+                <select name="status" style="margin-bottom: 0; width: 220px;">
+                    <option value="REPORTED" {% if issue.status == 'REPORTED' %}selected{% endif %}>REPORTED</option>
+                    <option value="ASSIGNED" {% if issue.status == 'ASSIGNED' %}selected{% endif %}>ASSIGNED</option>
+                    <option value="IN_PROGRESS" {% if issue.status == 'IN_PROGRESS' %}selected{% endif %}>IN_PROGRESS</option>
+                    <option value="RESOLVED" {% if issue.status == 'RESOLVED' %}selected{% endif %}>RESOLVED</option>
+                    <option value="CLOSED" {% if issue.status == 'CLOSED' %}selected{% endif %}>CLOSED</option>
+                </select>
+                <button type="submit" style="white-space: nowrap;">Update Status</button>
+            </form>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
+            <div>
+                <!-- Discussion Thread with Nested Replies -->
+                <div class="card">
+                    <h3>Discussion Thread</h3>
+                    {% for comment in comments if not comment.parent_id %}
+                    <div class="comment-item" style="margin-bottom: 15px;">
+                        <strong style="color: #fba100;">{{ comment.author.username if comment.author else 'User' }}:</strong>
+                        <p style="margin: 5px 0;">{{ comment.content }}</p>
+                        
+                        <button type="button" onclick="toggleReplyBox('reply-box-{{ comment.id }}')" style="background: transparent; color: #fba100; padding: 0; font-size: 12px; cursor: pointer;">Reply</button>
+
+                        <!-- Nested Replies -->
+                        {% for reply in comment.replies %}
+                        <div style="margin-left: 20px; margin-top: 10px; padding-left: 10px; border-left: 2px solid #2d2d35;">
+                            <strong style="color: #fba100;">{{ reply.author.username if reply.author else 'User' }}:</strong>
+                            <p style="margin: 5px 0;">{{ reply.content }}</p>
+                        </div>
+                        {% endfor %}
+
+                        <!-- Hidden Reply Form -->
+                        <form id="reply-box-{{ comment.id }}" method="POST" action="{{ url_for('user.add_comment', id=issue.id) }}" style="display: none; margin-top: 10px;">
+                            <input type="hidden" name="parent_id" value="{{ comment.id }}">
+                            <textarea name="comment_content" placeholder="Write a reply..." rows="2" required></textarea>
+                            <button type="submit" style="font-size: 11px; padding: 4px 8px;">Send Reply</button>
+                        </form>
+                    </div>
+                    {% else %}
+                    <p style="color: #a1a1aa; text-align: center;">No comments yet. Start the conversation below.</p>
+                    {% endfor %}
+
+                    <!-- Main Comment Form -->
+                    <form method="POST" action="{{ url_for('user.add_comment', id=issue.id) }}" style="margin-top: 15px;">
+                        <textarea name="comment_content" placeholder="Write a comment..." rows="3" required></textarea>
+                        <button type="submit">Post Comment</button>
+                    </form>
+                </div>
+
+                <!-- File Attachments -->
+                <div class="card">
+                    <h3>Attachments</h3>
+                    {% for att in attachments %}
+                    <div class="attachment-item">
+                        📎 <a href="{{ att.file_url }}" target="_blank" style="color: #fba100; text-decoration: none;">{{ att.file_name }}</a>
+                    </div>
+                    {% else %}
+                    <p style="color: #a1a1aa; text-align: center;">No files attached yet.</p>
+                    {% endfor %}
+
+                    <form method="POST" action="{{ url_for('user.upload_attachment', id=issue.id) }}" enctype="multipart/form-data" style="margin-top: 15px;">
+                        <input type="file" name="file" accept=".png,.jpg,.jpeg,.log" required style="padding: 6px;">
+                        <button type="submit" style="margin-top: 5px;">Upload File</button>
+                    </form>
+                </div>
+            </div>
+
+            <div>
+                <!-- Activity History / Audit Log -->
+                <div class="card">
+                    <h3>Activity History</h3>
+                    {% for log in audit_log %} <!-- Updated variable reference matching your route context -->
+                    <div class="log-item">
+                        <div style="font-size: 12px; color: #fba100;">{{ log.action }}</div>
+                        <div style="margin: 4px 0; color: #e1e1e6;">{{ log.old_value }} → {{ log.new_value }}</div>
+                        <div style="font-size: 11px; color: #a1a1aa;">{{ log.timestamp.strftime('%d %b %Y, %H:%M') if log.timestamp else '' }}</div>
+                    </div>
+                    {% else %}
+                    <p style="color: #a1a1aa; text-align: center;">No activity recorded yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    function toggleReplyBox(id) {
+        var box = document.getElementById(id);
+        box.style.display = box.style.display === 'none' ? 'block' : 'none';
+    }
+    </script>
+</body>
+</html>

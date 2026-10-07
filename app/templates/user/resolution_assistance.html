@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Resolution Assistance - BugFlow{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold text-white mb-1">AI Resolution Assistance</h2>
+        <p class="text-light opacity-75 mb-0">Analyze bug parameters and find the ideal developer match using automated triage.</p>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Select Bug Form Column -->
+    <div class="col-lg-5">
+        <div class="card p-4 shadow-sm bg-dark text-white border-secondary mb-4">
+            <h5 class="fw-bold mb-3 text-white"><i class="fa-solid fa-wand-magic-sparkles text-info me-2"></i> Select Bug to Analyze</h5>
+            <form method="POST">
+                <div class="mb-3">
+                    <label for="issue_id" class="form-label text-light">Choose Bug Ticket</label>
+                    <select name="issue_id" id="issue_id" class="form-select bg-dark text-white border-secondary" required>
+                        <option value="" disabled selected>-- Select an issue --</option>
+                        {% for issue in issues %}
+                        <option value="{{ issue.id }}" {% if selected_issue and selected_issue.id == issue.id %}selected{% endif %}>
+                            #BUG-{{ issue.id }} - {{ issue.title }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 shadow-sm">
+                    <i class="fa-solid fa-microchip me-2"></i> Run AI Matcher
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Recommendations Display Column -->
+    <div class="col-lg-7">
+        <div class="card p-4 shadow-sm bg-dark text-white border-secondary">
+            <h5 class="fw-bold mb-3 text-white">AI Developer Recommendation</h5>
+            
+            {% if selected_issue %}
+            <div class="p-3 mb-4 rounded border border-secondary bg-black bg-opacity-25">
+                <p class="mb-1"><strong>Bug:</strong> {{ selected_issue.title }}</p>
+                <p class="mb-1"><strong>Category:</strong> {{ selected_issue.category }}</p>
+                <p class="mb-1"><strong>Severity:</strong> <span class="badge bg-danger">{{ selected_issue.severity }}</span></p>
+            </div>
+
+            <h6 class="text-info fw-bold mb-3">Recommended Developers</h6>
+            <div class="list-group">
+                {% for rec in recommendations %}
+                <div class="list-group-item bg-dark text-white border-secondary mb-2 rounded p-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-1 fw-bold text-info">{{ loop.index }}. {{ rec.name }}</h5>
+                            <p class="mb-1 text-light small"><i class="fa-solid fa-code me-1"></i> {{ rec.skills }}</p>
+                            <p class="mb-0 text-muted small"><i class="fa-solid fa-tasks me-1"></i> {{ rec.active_tasks }} active task(s)</p>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-success fs-6 p-2">{{ rec.match_percentage }}% Match</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center text-muted py-5">
+                <i class="fa-solid fa-arrow-left fa-2x mb-3 text-secondary"></i>
+                <p class="mb-0">Select an issue from the left panel and click 'Run AI Matcher' to see recommendations.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

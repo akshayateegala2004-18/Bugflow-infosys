@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BugFlow - Projects</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #121214;
+            color: #e1e1e6;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            display: flex;
+        }
+        .sidebar {
+            width: 240px;
+            background-color: #1e1e24;
+            height: 100vh;
+            padding: 24px;
+            box-sizing: border-box;
+            border-right: 1px solid #2d2d35;
+            position: fixed;
+        }
+        .sidebar h2 {
+            color: #fba100;
+            margin-top: 0;
+            font-size: 22px;
+            margin-bottom: 30px;
+        }
+        .sidebar a {
+            display: block;
+            color: #a1a1aa;
+            text-decoration: none;
+            padding: 10px 12px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .sidebar a:hover, .sidebar a.active {
+            background-color: #2d2d35;
+            color: #fff;
+        }
+        .sidebar a.logout {
+            color: #ef4444;
+            margin-top: 40px;
+        }
+        .main-content {
+            margin-left: 240px;
+            padding: 40px;
+            width: calc(100% - 240px);
+            box-sizing: border-box;
+        }
+        .header-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 24px;
+        }
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        .project-card {
+            background-color: #1e1e24;
+            border: 1px solid #2d2d35;
+            padding: 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: block;
+            transition: border-color 0.2s;
+        }
+        .project-card:hover {
+            border-color: #fba100;
+        }
+        .project-card h3 {
+            margin-top: 0;
+            color: #fba100;
+            font-size: 18px;
+            margin-bottom: 12px;
+        }
+        .project-card p {
+            color: #a1a1aa;
+            font-size: 14px;
+            line-height: 1.5;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2>BugFlow</h2>
+        <a href="{{ url_for('user.dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('user.create_issue') }}">New Issue</a>
+        <a href="{{ url_for('user.projects') }}" class="active">Projects</a>
+        <a href="{{ url_for('user.reports') }}">Reports</a>
+        <a href="{{ url_for('user.logout') }}" class="logout">Logout</a>
+    </div>
+
+    <div class="main-content">
+        <div class="header-title">Active Projects</div>
+
+        <div class="projects-grid">
+            {% for project in projects %}
+            <a href="{{ url_for('user.project_detail', project_id=project.id) }}" class="project-card">
+                <h3>{{ project.name }}</h3>
+                <p>{{ project.description }}</p>
+            </a>
+            {% else %}
+            <p style="color: #a1a1aa;">No projects available in the system.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+</body>
+</html>

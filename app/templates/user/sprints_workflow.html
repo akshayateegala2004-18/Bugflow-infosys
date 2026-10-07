@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sprints & Workflow - BugFlow</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container my-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Sprints & Workflow Management</h2>
+            <a href="{{ url_for('user.dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="row">
+            <!-- Left Column: Sprints & Backlog -->
+            <div class="col-md-6">
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header bg-primary text-white">Create New Sprint</div>
+                    <div class="card-body">
+                        <form method="POST">
+                            <input type="hidden" name="action" value="create_sprint">
+                            <div class="mb-3">
+                                <label class="form-label">Sprint Name</label>
+                                <input type="text" name="name" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Sprint Goal</label>
+                                <textarea name="goal" class="form-control" rows="2"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Start Date</label>
+                                <input type="date" name="start_date" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">End Date</label>
+                                <input type="date" name="end_date" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Sprint Status</label>
+                                <select name="status" class="form-control" required>
+                                    <option value="PLANNING">PLANNING</option>
+                                    <option value="ACTIVE">ACTIVE</option>
+                                    <option value="COMPLETED">COMPLETED</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-success">Create Sprint</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm">
+                    <div class="card-header bg-dark text-white">Active Sprints & Backlog</div>
+                    <div class="card-body">
+                        <h5>Backlog Issues (Unassigned to Sprint)</h5>
+                        <ul class="list-group mb-3">
+                            {% for issue in backlog_issues %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                    <span><strong>#{{ issue.id }}</strong> - {{ issue.title }}</span>
+                                    {% if sprints %}
+                                    <form action="" method="POST" class="d-inline-flex gap-1 align-items-center" onsubmit="this.action = '/user/sprints/' + this.sprint_id.value + '/add-issue/{{ issue.id }}';">
+                                        <select name="sprint_id" class="form-select form-select-sm" style="width: auto;">
+                                            {% for s in sprints %}
+                                                <option value="{{ s.id }}">{{ s.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <button type="submit" class="btn btn-sm btn-outline-primary">Add</button>
+                                    </form>
+                                    {% endif %}
+                                </li>
+                            {% else %}
+                                <li class="list-group-item text-muted">No issues in backlog.</li>
+                            {% endfor %}
+                        </ul>
+
+                        <h5>Sprints Overview</h5>
+                        {% for sprint in sprints %}
+                            <div class="border p-3 mb-2 rounded bg-white">
+                                <strong>{{ sprint.name }}</strong> (Status: {{ sprint.status }})
+                                <p class="mb-1 text-muted small">Goal: {{ sprint.goal }}</p>
+                                <ul class="small">
+                                    {% for issue in sprint.issues %}
+                                        <li>#{{ issue.id }} - {{ issue.title }} [{{ issue.status }}]</li>
+                                    {% else %}
+                                        <li class="text-muted">No issues assigned to this sprint yet.</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Live Activity Stream & Workflow Status Manager -->
+            <div class="col-md-6">
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header bg-secondary text-white">Update Issue Status</div>
+                    <div class="card-body">
+                        <form method="POST">
+                            <input type="hidden" name="action" value="update_status">
+                            <div class="mb-3">
+                                <label class="form-label">Select Issue</label>
+                                <select name="issue_id" class="form-control" required>
+                                    {% for issue in active_issues %}
+                                        <option value="{{ issue.id }}">#{{ issue.id }} - {{ issue.title }} (Current: {{ issue.status }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">New Status</label>
+                                <select name="status" class="form-control" required>
+                                    <option value="TRIAGED">TRIAGED</option>
+                                    <option value="IN_PROGRESS">IN_PROGRESS</option>
+                                    <option value="QA_VERIFICATION">QA_VERIFICATION</option>
+                                    <option value="RESOLVED">RESOLVED</option>
+                                    <option value="CLOSED">CLOSED</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-warning">Update Status</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm">
+                    <div class="card-header bg-info text-white">Live Activity Stream (Audit Logs)</div>
+                    <div class="card-body" style="max-height: 350px; overflow-y: auto;">
+                        <ul class="list-unstyled">
+                            {% for log in audit_logs %}
+                                <li class="border-bottom py-2">
+                                    <small class="text-muted">{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</small>
+                                    <p class="mb-0">{{ log.action }}</p>
+                                </li>
+                            {% else %}
+                                <li class="text-muted">No recent activities logged.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

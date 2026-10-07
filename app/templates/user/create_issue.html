@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BugFlow - Create Issue</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container mt-5 mb-5" style="max-width: 700px;">
+        <div class="card shadow p-4">
+            <h3 class="mb-4 fw-bold">Report New Bug / Issue</h3>
+            <form method="POST">
+                <div class="mb-3">
+                    <label class="form-label">Issue Title</label>
+                    <input type="text" class="form-control" name="title" placeholder="e.g. Database connection timeout on PostgreSQL" required>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Project</label>
+                        <select class="form-select" name="project_id" required>
+                            {% for p in projects %}
+                            <option value="{{ p.id }}">{{ p.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Category</label>
+                        <select class="form-select" name="category">
+                            <option value="Security">Security</option>
+                            <option value="Database">Database</option>
+                            <option value="API">API</option>
+                            <option value="Backend">Backend</option>
+                            <option value="UI">UI</option>
+                            <option value="Reporting">Reporting</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Severity</label>
+                        <select class="form-select" name="severity">
+                            <option value="CRITICAL">Critical</option>
+                            <option value="MAJOR">Major</option>
+                            <option value="MINOR">Minor</option>
+                            <option value="TRIVIAL">Trivial</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Priority Override (Optional)</label>
+                        <select class="form-select" name="priority">
+                            <option value="">-- Auto-Calculated via Triage --</option>
+                            <option value="CRITICAL">Critical</option>
+                            <option value="MAJOR">Major</option>
+                            <option value="MINOR">Minor</option>
+                            <option value="TRIVIAL">Trivial</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Environment</label>
+                        <input type="text" class="form-control" name="environment" placeholder="e.g. Production / Chrome v120">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Affected Module</label>
+                        <input type="text" class="form-control" name="affected_module" placeholder="e.g. PostgreSQL Driver Module">
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="developer_id" class="form-label">Assign To (Optional - AI Triage if blank)</label>
+                    <select name="developer_id" id="developer_id" class="form-select">
+                        <option value="">-- Let AI Smart Match --</option>
+                        {% for dev in developers %}
+                        <option value="{{ dev.id }}">{{ dev.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-control" name="description" rows="3" placeholder="Detailed bug description..." required></textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Reproduction Steps</label>
+                    <textarea class="form-control" name="reproduction_steps" rows="2" placeholder="1. Go to... 2. Click on..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-success w-100 py-2">Submit Bug & Run Triage</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

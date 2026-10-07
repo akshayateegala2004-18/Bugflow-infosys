@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}BugFlow - Software Issue Tracking{% endblock %}</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #0b132b;
+            color: #e0e1dd;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            position: fixed;
+            background: #1c2541;
+            border-right: 1px solid #3a506b;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .main-content {
+            margin-left: 250px;
+            padding: 30px;
+        }
+        .card {
+            background-color: #1c2541;
+            border: 1px solid #3a506b;
+            color: #e0e1dd;
+        }
+        .table {
+            color: #e0e1dd;
+        }
+        .nav-link {
+            color: #8d99ae;
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-bottom: 5px;
+        }
+        .nav-link:hover, .nav-link.active {
+            background-color: #3a506b;
+            color: #ffffff;
+        }
+        .menu-category {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #415a77;
+            margin-top: 15px;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+        <h3 class="text-white mb-4 fw-bold"><i class="fa-solid fa-bug text-primary"></i> BugFlow</h3>
+        
+        <div class="menu-category">Main</div>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a href="{{ url_for('user.dashboard') }}" class="nav-link {% if request.endpoint == 'user.dashboard' %}active{% endif %}">
+                    <i class="fa-solid fa-house me-2"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('user.create_issue') }}" class="nav-link {% if request.endpoint == 'user.create_issue' %}active{% endif %}">
+                    <i class="fa-solid fa-plus me-2"></i> Report Issue
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('user.developer_dashboard') }}" class="nav-link {% if request.endpoint == 'user.developer_dashboard' or request.endpoint == 'user.my_issues' %}active{% endif %}">
+                    <i class="fa-solid fa-list-check me-2"></i> My Issues
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('user.resolution_assistance') }}" class="nav-link {% if request.endpoint == 'user.resolution_assistance' %}active{% endif %}">
+                    <i class="fa-solid fa-wand-magic-sparkles me-2"></i> Resolution Assistance
+                </a>
+            </li>
+        </ul>
+
+        <div class="menu-category">Agile & Workspaces</div>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a href="{{ url_for('user.sprints_workflow') }}" class="nav-link {% if request.endpoint == 'user.sprints_workflow' %}active{% endif %}">
+                    <i class="fa-solid fa-rotate me-2"></i> Sprints & Workflow
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('user.projects') }}" class="nav-link {% if request.endpoint == 'user.projects' %}active{% endif %}">
+                    <i class="fa-solid fa-folder me-2"></i> Projects
+                </a>
+            </li>
+            <li class="nav-item"><a href="#" class="nav-link"><i class="fa-solid fa-users me-2"></i> Team</a></li>
+            <li class="nav-item"><a href="#" class="nav-link"><i class="fa-solid fa-file-lines me-2"></i> Reports</a></li>
+        </ul>
+
+        <div class="menu-category">Quality & Metrics</div>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a href="{{ url_for('user.analytics') }}" class="nav-link {% if request.endpoint == 'user.analytics' %}active{% endif %}">
+                    <i class="fa-solid fa-chart-pie me-2"></i> Analytics & APIs
+                </a>
+            </li>
+        </ul>
+
+        <hr class="text-secondary my-4">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a href="{{ url_for('auth.logout') }}" class="nav-link text-danger">
+                    <i class="fa-solid fa-right-from-bracket me-2"></i> Logout
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main Wrapper Content -->
+    <div class="main-content">
+        {% block content %}{% endblock %}
+    </div>
+
+</body>
+</html>
+<li class="nav-item">
+    <a href="{{ url_for('user.developer_dashboard') }}" class="nav-link {% if request.endpoint == 'user.developer_dashboard' %}active{% endif %}">
+        <i class="fa-solid fa-list-check me-2"></i> My Issues
+    </a>
+</li>
